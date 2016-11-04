@@ -1,0 +1,60 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context="com.cocoonshu.cobox.gestureimageview.MainActivity">
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:title="@string/action_settings"
+        android:icon="@android:drawable/ic_menu_more"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_revert"
+        android:orderInCategory="100"
+        android:title="@string/action_revert"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_rotate"
+        android:orderInCategory="100"
+        android:title="@string/action_rotate"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_free"
+        android:orderInCategory="100"
+        android:title="@string/action_free"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_1_1"
+        android:orderInCategory="100"
+        android:title="@string/action_1_1"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_4_3"
+        android:orderInCategory="100"
+        android:title="@string/action_4_3"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_3_4"
+        android:orderInCategory="100"
+        android:title="@string/action_3_4"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_16_9"
+        android:orderInCategory="100"
+        android:title="@string/action_16_9"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_9_16"
+        android:orderInCategory="100"
+        android:title="@string/action_9_16"
+        app:showAsAction="never"/>
+
+</menu>
