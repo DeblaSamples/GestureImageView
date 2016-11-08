@@ -1,6 +1,7 @@
 package com.cocoonshu.cobox.gestureimageview;
 
 import android.graphics.Matrix;
+import android.graphics.Rect;
 import android.graphics.RectF;
 
 /**
@@ -10,14 +11,16 @@ import android.graphics.RectF;
  */
 public class GestureAnimator {
 
-    public  static final String  TAG          = "GestureAnimator";
-    private static final float[] sTempPolygon = new float[8];
+    public  static final String  TAG           = "GestureAnimator";
+    private static final float[] sTempPolygon  = new float[8];
+    public  static final float[] sInvertBuffer = new float[8];
 
     private float   mZoomInScaleTimes      = 2f;
 
     private RectF   mImageRect             = new RectF();
     private RectF   mDisplayRect           = new RectF();
     private RectF   mDrawingOutBounds      = new RectF();
+    private RectF   mImageClipRect         = new RectF();
 
     private Vector  mCurrentPose           = new Vector();
     private Vector  mFinalPose             = new Vector();
@@ -89,6 +92,42 @@ public class GestureAnimator {
             mDrawingOutBounds.set(minLeft, minTop, maxRight, maxBottom);
         }
         return mDrawingOutBounds;
+    }
+
+    public final RectF getImageClipRect(RectF clipRect) {
+        unprojectImageSrcAreaByMatrix(mFinalImageTransform, clipRect, mImageClipRect);
+        return mImageClipRect;
+    }
+
+    private final void unprojectImageSrcAreaByMatrix(Matrix matrix, RectF src, RectF dest) {
+        Matrix inverseMat = new Matrix();
+        inverseMat.reset();
+
+        if (matrix.invert(inverseMat)) {
+            sInvertBuffer[0] = src.left;
+            sInvertBuffer[1] = src.top;
+            sInvertBuffer[2] = src.right;
+            sInvertBuffer[3] = src.top;
+            sInvertBuffer[4] = src.left;
+            sInvertBuffer[5] = src.bottom;
+            sInvertBuffer[6] = src.right;
+            sInvertBuffer[7] = src.bottom;
+            inverseMat.mapPoints(sInvertBuffer);
+            dest.left = Float.POSITIVE_INFINITY;
+            dest.right = Float.NEGATIVE_INFINITY;
+            for (int i = 0; i < sInvertBuffer.length; i += 2) {
+                dest.left = sInvertBuffer[i] < dest.left ? sInvertBuffer[i] : dest.left;
+                dest.right = sInvertBuffer[i] > dest.right ? sInvertBuffer[i] : dest.right;
+            }
+            dest.top = Float.POSITIVE_INFINITY;
+            dest.bottom = Float.NEGATIVE_INFINITY;
+            for (int i = 1; i < sInvertBuffer.length; i += 2) {
+                dest.top = sInvertBuffer[i] < dest.top ? sInvertBuffer[i] : dest.top;
+                dest.bottom = sInvertBuffer[i] > dest.bottom ? sInvertBuffer[i] : dest.bottom;
+            }
+        } else {
+            dest.setEmpty();
+        }
     }
 
     public void reset() {

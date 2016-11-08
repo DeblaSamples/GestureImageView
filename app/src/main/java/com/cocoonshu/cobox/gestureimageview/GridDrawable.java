@@ -250,7 +250,6 @@ public class GridDrawable extends Drawable {
             invalidateSelf();
         }
 
-
         updateGridLines();
 
         int currentFrameAlpha = (int) mAlphaAnimator.getCurrentValue();
@@ -317,7 +316,7 @@ public class GridDrawable extends Drawable {
         invalidateSelf();
     }
 
-    public void setCurrentRotate(float degree) {
+    public void setCurrentImageRotate(float degree) {
         mCurrentRotate = degree;
     }
 

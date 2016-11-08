@@ -3,9 +3,11 @@ package com.cocoonshu.cobox.gestureimageview;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
@@ -65,13 +67,17 @@ public class MainActivity extends AppCompatActivity {
                 if (mClipTask != null) {
                     mClipTask.cancel(true);
                 }
+
+                Matrix imageClipMatrix = mImgPicture.getImageClipMatrix();
+                RectF  imageClipRect   = mImgPicture.getImageClipRect();
                 mClipTask = new ClipImageTask();
-                mClipTask.setClipParameters(mImgPicture.getImageClipMatrix(), mImgPicture.getImageClipRect())
+                mClipTask.setClipParameters(imageClipMatrix, imageClipRect)
                         .setSrcBitmap(((BitmapDrawable)mImgPicture.getImage()).getBitmap())
                         .setOnFinishedListener(new ClipImageTask.OnFinishedListener() {
                             @Override
                             public void onSuccessed(Bitmap bitmap) {
                                 BitmapDrawable image = new BitmapDrawable(bitmap);
+                                image.setTargetDensity(bitmap.getDensity());
                                 mImgPicture.setImage(image);
                             }
 
@@ -162,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
 
         private Bitmap             mSrcBitmap = null;
         private Matrix             mTransform = new Matrix();
-        private Rect               mClipRect  = new Rect();
+        private RectF              mClipRect  = new RectF();
         private OnFinishedListener mListener  = null;
 
 
@@ -180,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
             return this;
         }
 
-        public ClipImageTask setClipParameters(Matrix transform, Rect clipRect) {
+        public ClipImageTask setClipParameters(Matrix transform, RectF clipRect) {
             mTransform.set(transform);
             mClipRect.set(clipRect);
             return this;
@@ -203,10 +209,9 @@ public class MainActivity extends AppCompatActivity {
             if (mSrcBitmap == null || mClipRect.isEmpty()) {
                 return null;
             } else {
-                return Bitmap.createBitmap(
-                        mSrcBitmap,
-                        mClipRect.left, mClipRect.top,
-                        mClipRect.width(), mClipRect.height(),
+                return Bitmap.createBitmap(mSrcBitmap,
+                        (int) mClipRect.left, (int) mClipRect.top,
+                        (int) mClipRect.width(), (int) mClipRect.height(),
                         mTransform, true);
             }
         }

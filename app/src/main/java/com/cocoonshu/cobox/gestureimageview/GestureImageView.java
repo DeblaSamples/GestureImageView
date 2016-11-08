@@ -6,7 +6,6 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
@@ -171,7 +170,8 @@ public class GestureImageView extends View implements GestureDetector.OnGestureL
 
                 @Override
                 public void onSuccessed(final Bitmap bitmap) {
-                    Drawable image = new BitmapDrawable(bitmap);
+                    BitmapDrawable image = new BitmapDrawable(bitmap);
+                    image.setTargetDensity(bitmap.getDensity());
                     setImage(image);
                 }
 
@@ -335,6 +335,7 @@ public class GestureImageView extends View implements GestureDetector.OnGestureL
                 if (mImageDrawable != null) {
                     drawableWidth  = mImageDrawable.getIntrinsicWidth();
                     drawableHeight = mImageDrawable.getIntrinsicHeight();
+                    android.util.Log.e(TAG, "[onDraw] imageDrawable = (" + drawableWidth + ", " + drawableHeight + ")");
 
                     // Update animator
                     mAnimator.setDisplayRect(paddingLeft, paddingTop, paddingLeft + roomWidth, paddingTop + roomHeight);
@@ -366,7 +367,7 @@ public class GestureImageView extends View implements GestureDetector.OnGestureL
             mGridDrawable.setBounds(0, 0, (int) (viewWidth), (int) (viewHeight));
             mGridDrawable.setImageDrawingOutBounds(mAnimator.getDrawingOutBound());
             mGridDrawable.setClipLimitRect(mAnimator.getDisplayRect());
-            mGridDrawable.setCurrentRotate(mAnimator.getDegree());
+            mGridDrawable.setCurrentImageRotate(mAnimator.getDegree());
             mGridDrawable.setEnabled(mImageDrawable != null);
             mGridDrawable.draw(canvas);
         }
@@ -735,22 +736,8 @@ public class GestureImageView extends View implements GestureDetector.OnGestureL
         return new Matrix(mAnimator.getImageTransform());
     }
 
-    public final Rect getImageClipRect() {
-        RectF drawingOutBounds = mAnimator.getDrawingOutBound();
-        RectF imageClipRect    = mGridDrawable.getClipRect();
-        float outBoundsWidth   = drawingOutBounds.width();
-        float outBoundsHeight  = drawingOutBounds.height();
-        float imageWidth       = mImageDrawable.getIntrinsicWidth();
-        float imageHeight      = mImageDrawable.getIntrinsicHeight();
-        float clipLeft         = ((imageClipRect.left - drawingOutBounds.left) / outBoundsWidth) * imageWidth;
-        float clipTop          = ((imageClipRect.top - drawingOutBounds.top) / outBoundsHeight) * imageHeight;
-        float clipRight        = ((imageClipRect.right - drawingOutBounds.left) / outBoundsWidth) * imageWidth;
-        float clipBottom       = ((imageClipRect.bottom - drawingOutBounds.top) / outBoundsHeight) * imageHeight;
-        return new Rect(
-                (int) (clipLeft < 0 ? 0 : clipLeft),
-                (int) (clipTop < 0 ? 0 : clipTop),
-                (int) (clipRight > imageWidth ? imageWidth : clipRight),
-                (int) (clipBottom > imageHeight ? imageHeight : clipBottom)
-        );
+    public final RectF getImageClipRect() {
+        RectF imageClipRect = mGridDrawable.getClipRect();
+        return mAnimator.getImageClipRect(imageClipRect);
     }
 }
