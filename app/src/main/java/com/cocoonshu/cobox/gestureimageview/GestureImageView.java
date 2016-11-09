@@ -666,6 +666,8 @@ public class GestureImageView extends View implements GestureDetector.OnGestureL
         RectF clip = drawable.getClipRect();
         RectF dest = mAnimator.zoomIn(clip);
         drawable.zoomTo(dest);
+        scaleImageBack();
+        scrollImageBack();
     }
 
     ///
