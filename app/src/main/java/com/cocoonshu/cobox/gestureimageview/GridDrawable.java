@@ -13,6 +13,12 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.MotionEvent;
 
+import com.cocoonshu.cobox.animation.Smoother;
+import com.cocoonshu.cobox.animation.Smoother4;
+import com.cocoonshu.cobox.graphic.SizeF;
+import com.cocoonshu.cobox.utils.ImageUtils;
+import com.cocoonshu.cobox.utils.MathUtils;
+
 /**
  * Grid frame drawable
  * @author Cocoonshu
@@ -55,7 +61,7 @@ public class GridDrawable extends Drawable {
     private float[]                   mGridLines                  = null;
     private float[]                   mFrameLines                 = null;
     private float[]                   mCornerLines                = null;
-    private Smoother                  mAlphaAnimator              = null;
+    private Smoother mAlphaAnimator              = null;
     private Smoother                  mGridAlphaAnimator          = null;
     private Paint                     mFrameLinePaint             = new Paint();
     private Paint                     mGridLinePaint              = new Paint();
@@ -65,7 +71,7 @@ public class GridDrawable extends Drawable {
     private Rect                      mDrawingClipRect            = new Rect();
     private RectF                     mDrawingOutBounds           = new RectF();
     private PointF                    mTransformedPoint           = new PointF();
-    private SizeF                     mMinClipSize                = new SizeF();
+    private SizeF mMinClipSize                = new SizeF();
     private boolean                   mHasEatTouchEvent           = false;
     private boolean                   mIsActived                  = false;
     private boolean                   mIsEnabled                  = true;
@@ -73,7 +79,7 @@ public class GridDrawable extends Drawable {
     private float                     mCurrentRotate              = 0;
     private int                       mMotionActions              = MOTION_ACTION_NONE;
     private PointF                    mLastMotionPoint            = new PointF();
-    private Smoother4                 mClipSmoother               = null;
+    private Smoother4 mClipSmoother               = null;
     private OnClipChangedListener     mOnClipChangedListener      = null;
 
     public static interface OnClipChangedListener {
@@ -116,10 +122,10 @@ public class GridDrawable extends Drawable {
                 acturalCornerLineHeight * 3f + acturalLineWidth,
                 acturalCornerLineHeight * 3f + acturalLineWidth);
 
-        float clipLeft    = mClipSmoother.getCurrentLeft();
-        float clipRight   = mClipSmoother.getCurrentRight();
-        float clipTop     = mClipSmoother.getCurrentTop();
-        float clipBottom  = mClipSmoother.getCurrentBottom();
+        float clipLeft    = mClipSmoother.getCurrentLeft() + halfLineWidth;
+        float clipRight   = mClipSmoother.getCurrentRight() - halfLineWidth;
+        float clipTop     = mClipSmoother.getCurrentTop() + halfLineWidth;
+        float clipBottom  = mClipSmoother.getCurrentBottom() - halfLineWidth;
         float unitWidth   = (clipRight - clipLeft) / mWidthCount;
         float unitHeight  = (clipBottom - clipTop) / mHeightCount;
         int   pointOffset = 0;
@@ -678,8 +684,9 @@ public class GridDrawable extends Drawable {
         float clipViewRectHeight  = getBounds().height();
         float clipRectCenterX     = mClipRect.centerX();
         float clopRectCenterY     = mClipRect.centerY();
-        float drawingRectWidth    = mDrawingClipRect.width();
-        float drawingRectHeight   = mDrawingClipRect.height();
+        RectF drawingOutBound     = mDrawingOutBounds;
+        float drawingRectWidth    = drawingOutBound.width();
+        float drawingRectHeight   = drawingOutBound.height();
         float scaleFactor         = 1f;
         float drawingCacheScale   = 1f;
         float destLimitWidth      = 0f;
@@ -694,19 +701,23 @@ public class GridDrawable extends Drawable {
         float destClipBottom      = 0f;
         float minClipWidth        = 0f;
         float minClipHeight       = 0f;
-
-        destLimitWidth  = Math.min(clipLimitRectWidth, clipViewRectWidth);
-        destLimitHeight = Math.min(clipLimitRectHeight, clipViewRectHeight);
-        destLimitWidth  = Math.min(destLimitWidth, drawingRectWidth);
-        destLimitHeight = Math.min(destLimitHeight, drawingRectHeight);
+        float clipRatio           = mClipRect.width() / mClipRect.height();
 
         if (currentRotate == 0) {
+            if (ratio < clipRatio) {
+                destWidth  = mClipRect.width();
+                destHeight = destWidth / ratio;
+            } else {
+                destHeight = mClipRect.height();
+                destWidth  = destHeight * ratio;
+            }
             scaleFactor   = ImageUtils.scaleImage(
-                    ratio, 1.0f,
-                    destLimitWidth, destLimitHeight,
+                    destWidth, destHeight,
+                    drawingRectWidth, drawingRectHeight,
                     ImageUtils.SCALE_MODE_INSIDE);
-            destWidth     = ratio * scaleFactor;
-            destHeight    = 1.0f * scaleFactor;
+            scaleFactor   = scaleFactor > 1f ? 1f : scaleFactor;
+            destWidth     = destWidth * scaleFactor;
+            destHeight    = destHeight * scaleFactor;
             minClipWidth  = mClipRatio * mMinClipSize.height;
             minClipHeight = mMinClipSize.height;
             if (destWidth < minClipWidth || destHeight < minClipHeight) {
@@ -714,12 +725,21 @@ public class GridDrawable extends Drawable {
                 destHeight = minClipHeight;
             }
         } else {
+            ratio = 1f / ratio;
+            if (ratio > clipRatio) {
+                destHeight = mClipRect.height();
+                destWidth  = destHeight * ratio;
+            } else {
+                destWidth  = mClipRect.width();
+                destHeight = destWidth / ratio;
+            }
             scaleFactor   = ImageUtils.scaleImage(
-                    1.0f, ratio,
-                    destLimitWidth, destLimitHeight,
+                    destWidth, destHeight,
+                    drawingRectWidth, drawingRectHeight,
                     ImageUtils.SCALE_MODE_INSIDE);
-            destWidth     = 1.0f * scaleFactor;
-            destHeight    = ratio * scaleFactor;
+            scaleFactor   = scaleFactor > 1f ? 1f : scaleFactor;
+            destWidth     = destWidth * scaleFactor;
+            destHeight    = destHeight * scaleFactor;
             minClipWidth  = mMinClipSize.width;
             minClipHeight = mClipRatio * mMinClipSize.width;
             if (destWidth < minClipWidth || destHeight < minClipHeight) {
@@ -735,14 +755,13 @@ public class GridDrawable extends Drawable {
         destClipTop    = clopRectCenterY - destHalfHeight;
         destClipBottom = clopRectCenterY + destHalfHeight;
         setClipRect(destClipLeft, destClipTop, destClipRight, destClipBottom);
-        invalidateSelf();
 
         // Invoke animator to resize ClipFrame
         if (mOnClipChangedListener != null) {
             mOnClipChangedListener.onClipStart(GridDrawable.this);
-//            mOnClipChangedListener.onClipChanging(GridDrawable.this, mClipRect);
             mOnClipChangedListener.onClipStop(GridDrawable.this);
         }
+        invalidateSelf();
     }
 
     public boolean onTouchEvent(MotionEvent event) {

@@ -1,25 +1,27 @@
-package com.cocoonshu.cobox.gestureimageview;
+package com.cocoonshu.cobox.animation;
 
 /**
  * Smoother of Value
  * @author Cocoonshu
  * @date 2015-03-26 17:04:39
  */
-public class Smoother2 {
+public class Smoother3 {
 
     private float   mFactor            = 1E-2F;
-    private float   mError             = 2E-3F;
+    private float   mError             = 1E-3F;
     private float   mCurrentValueX     = 0;
     private float   mCurrentValueY     = 0;
+    private float   mCurrentValueZ     = 0;
     private float   mDestinationValueX = 0;
     private float   mDestinationValueY = 0;
+    private float   mDestinationValueZ = 0;
     private boolean mIsBypassed        = false;
 
-    public Smoother2() {
+    public Smoother3() {
 
     }
 
-    public Smoother2(float factor, float error) {
+    public Smoother3(float factor, float error) {
         mFactor = factor;
         mError = error;
     }
@@ -36,23 +38,28 @@ public class Smoother2 {
         if (mIsBypassed) {
             mCurrentValueX = mDestinationValueX;
             mCurrentValueY = mDestinationValueY;
+            mCurrentValueZ = mDestinationValueZ;
             return false;
         }
 
-        float targetValueX = mCurrentValueX + (mDestinationValueX - mCurrentValueX) * mFactor;
-        float targetValueY = mCurrentValueY + (mDestinationValueY - mCurrentValueY) * mFactor;
-        if (mCurrentValueX == targetValueX && mCurrentValueY == targetValueY) {
+        float targetX = mCurrentValueX + (mDestinationValueX - mCurrentValueX) * mFactor;
+        float targetY = mCurrentValueY + (mDestinationValueY - mCurrentValueY) * mFactor;
+        float targetZ = mCurrentValueZ + (mDestinationValueZ - mCurrentValueZ) * mFactor;
+        if (mCurrentValueX == targetX && mCurrentValueY == targetY && mCurrentValueZ == targetZ) {
             mCurrentValueX = mDestinationValueX;
             mCurrentValueY = mDestinationValueY;
+            mCurrentValueZ = mDestinationValueZ;
             return false;
         } else {
-            mCurrentValueX = targetValueX;
-            mCurrentValueY = targetValueY;
-            if (Math.abs(mDestinationValueX - mCurrentValueX) + Math.abs(mDestinationValueY - mCurrentValueY) > mError) {
+            mCurrentValueX = targetX;
+            mCurrentValueY = targetY;
+            mCurrentValueZ = targetZ;
+            if (Math.abs((mDestinationValueX + mDestinationValueY) - (mCurrentValueX + mCurrentValueY) - (mCurrentValueZ + mCurrentValueZ)) > mError) {
                 return true;
             } else {
                 mCurrentValueX = mDestinationValueX;
                 mCurrentValueY = mDestinationValueY;
+                mCurrentValueZ = mDestinationValueZ;
                 return false;
             }
         }
@@ -61,6 +68,7 @@ public class Smoother2 {
     public void forceFinish() {
         mCurrentValueX = mDestinationValueX;
         mCurrentValueY = mDestinationValueY;
+        mCurrentValueZ = mDestinationValueZ;
     }
 
     public final float getError() {
@@ -79,6 +87,10 @@ public class Smoother2 {
         return mCurrentValueY;
     }
 
+    public float getCurrentValueZ() {
+        return mCurrentValueZ;
+    }
+
     public float getDestinationValueX() {
         return mDestinationValueX;
     }
@@ -87,13 +99,19 @@ public class Smoother2 {
         return mDestinationValueY;
     }
 
-    public void setCurrentValue(float currentValueX, float currentValueY) {
-        mCurrentValueX = currentValueX;
-        mCurrentValueY = currentValueY;
+    public float getDestinationValueZ() {
+        return mDestinationValueZ;
     }
 
-    public void setDestinationValue(float destinationValueX, float destinationValueY) {
+    public void setCurrentValue(float currentValueX, float currentValueY, float currentValueZ) {
+        mCurrentValueX = currentValueX;
+        mCurrentValueY = currentValueY;
+        mCurrentValueZ = currentValueZ;
+    }
+
+    public void setDestinationValue(float destinationValueX, float destinationValueY, float destinationValueZ) {
         mDestinationValueX = destinationValueX;
         mDestinationValueY = destinationValueY;
+        mDestinationValueZ = destinationValueZ;
     }
 }

@@ -1,8 +1,10 @@
 package com.cocoonshu.cobox.gestureimageview;
 
 import android.graphics.Matrix;
-import android.graphics.Rect;
 import android.graphics.RectF;
+
+import com.cocoonshu.cobox.graphic.Vector;
+import com.cocoonshu.cobox.utils.ImageUtils;
 
 /**
  * Gesture animator for Gestured image view
@@ -15,18 +17,17 @@ public class GestureAnimator {
     private static final float[] sTempPolygon  = new float[8];
     public  static final float[] sInvertBuffer = new float[8];
 
-    private float   mZoomInScaleTimes      = 2f;
-
-    private RectF   mImageRect             = new RectF();
-    private RectF   mDisplayRect           = new RectF();
-    private RectF   mDrawingOutBounds      = new RectF();
-    private RectF   mImageClipRect         = new RectF();
-
-    private Vector  mCurrentPose           = new Vector();
-    private Vector  mFinalPose             = new Vector();
-    private Matrix  mCurrentImageTransform = new Matrix();
-    private Matrix  mFinalImageTransform   = new Matrix();
-    private Matrix  mOperationTransform    = new Matrix();
+    private float   mZoomInScaleTimes          = 2f;
+    private RectF   mImageRect                 = new RectF();
+    private RectF   mDisplayRect               = new RectF();
+    private RectF   mDrawingOutBounds          = new RectF();
+    private RectF   mAnimatedDrawingOutBounds  = new RectF();
+    private RectF   mImageClipRect             = new RectF();
+    private Vector mCurrentPose               = new Vector();
+    private Vector  mFinalPose                 = new Vector();
+    private Matrix  mCurrentImageTransform     = new Matrix();
+    private Matrix  mFinalImageTransform       = new Matrix();
+    private Matrix  mOperationTransform        = new Matrix();
 
     private OnInvalidateListener mOnInvalidateListener = null;
 
@@ -53,6 +54,10 @@ public class GestureAnimator {
 
     public void setOnInvalidateListener(OnInvalidateListener listener) {
         mOnInvalidateListener = listener;
+    }
+
+    public RectF getImageRect() {
+        return mImageRect;
     }
 
     public void setImageRect(float left, float top, float right, float bottom) {
@@ -92,6 +97,33 @@ public class GestureAnimator {
             mDrawingOutBounds.set(minLeft, minTop, maxRight, maxBottom);
         }
         return mDrawingOutBounds;
+    }
+
+    public final RectF getAnimatedDrawingOutBound() {
+        float minLeft      = Float.POSITIVE_INFINITY;
+        float maxRight     = Float.NEGATIVE_INFINITY;
+        float minTop       = Float.POSITIVE_INFINITY;
+        float maxBottom    = Float.NEGATIVE_INFINITY;
+
+        synchronized (sTempPolygon) {
+            sTempPolygon[0] = mImageRect.left;  sTempPolygon[1] = mImageRect.top;
+            sTempPolygon[2] = mImageRect.right; sTempPolygon[3] = mImageRect.top;
+            sTempPolygon[4] = mImageRect.left;  sTempPolygon[5] = mImageRect.bottom;
+            sTempPolygon[6] = mImageRect.right; sTempPolygon[7] = mImageRect.bottom;
+            mCurrentImageTransform.mapPoints(sTempPolygon);
+            for (int i = 0; i < sTempPolygon.length; i += 2) {
+                float x = sTempPolygon[i + 0];
+                float y = sTempPolygon[i + 1];
+                minLeft   = x < minLeft ? x : minLeft;
+                maxRight  = x > maxRight ? x : maxRight;
+                minTop    = y < minTop ? y : minTop;
+                maxBottom = y > maxBottom ? y : maxBottom;
+            }
+        }
+        synchronized (mAnimatedDrawingOutBounds) {
+            mAnimatedDrawingOutBounds.set(minLeft, minTop, maxRight, maxBottom);
+        }
+        return mAnimatedDrawingOutBounds;
     }
 
     public final RectF getImageClipRect(RectF clipRect) {
@@ -295,12 +327,53 @@ public class GestureAnimator {
         requestRedraw();
     }
 
+    public void scrollIntoConstraintRect(RectF constraint) {
+        RectF drawingOutBound = getDrawingOutBound();
+        RectF constraintRect  = constraint;
+        if (!drawingOutBound.contains(constraintRect)) {
+            float deltaX = 0;
+            float deltaY = 0;
+
+            // Horizontal adjusting
+            float centerXOffset = drawingOutBound.centerX() - constraintRect.centerX();
+            if (centerXOffset > 0) {
+                // Move to left
+                deltaX = constraintRect.left - drawingOutBound.left;
+                deltaX = deltaX < 0 ? deltaX : 0;
+            } else {
+                // Move to right
+                deltaX = constraintRect.right - drawingOutBound.right;
+                deltaX = deltaX > 0 ? deltaX : 0;
+            }
+
+            // Vertical adjusting
+            float centerYOffset = drawingOutBound.centerY() - constraintRect.centerY();
+            if (centerYOffset > 0) {
+                // Move to top
+                deltaY = constraintRect.top - drawingOutBound.top;
+                deltaY = deltaY < 0 ? deltaY : 0;
+            } else {
+                // Move to bottom
+                deltaY = constraintRect.bottom - drawingOutBound.bottom;
+                deltaY = deltaY > 0 ? deltaY : 0;
+            }
+
+            if (deltaX != 0 || deltaY != 0) {
+                scroll(-deltaX, -deltaY);
+            }
+        }
+    }
+
     public float getRotate() {
         return mFinalPose.getRotate();
     }
 
     public float getDegree() {
         return mFinalPose.getDegree();
+    }
+
+    public void rotate(float degree) {
+        rotate(degree, mDisplayRect.centerX(), mDisplayRect.centerY());
     }
 
     public void rotate(float degree, float pivotX, float pivotY) {
@@ -313,6 +386,10 @@ public class GestureAnimator {
 
     public float getScale() {
         return mFinalPose.getScale();
+    }
+
+    public void scale(float scale) {
+        scale(scale, mDisplayRect.centerX(), mDisplayRect.centerY());
     }
 
     public void scale(float scale, float pivotX, float pivotY) {
@@ -329,6 +406,10 @@ public class GestureAnimator {
 
     public Matrix getImageTransform() {
         return mCurrentImageTransform;
+    }
+
+    public Matrix getFinalImageTransform() {
+        return mFinalImageTransform;
     }
 
     public float getImageWidth() {

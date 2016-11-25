@@ -7,6 +7,8 @@ import android.os.Looper;
 import android.os.Message;
 import android.view.MotionEvent;
 
+import com.cocoonshu.cobox.animation.Smoother;
+
 /**
  * Gesture detector for scale and rotate mixing
  * @author Cocoonshu
@@ -44,7 +46,7 @@ public class ScaleRotateDetector {
     private PointF mPointerCenter           = new PointF();
     private PointF mPointerMain             = new PointF();
     private PointF mPointerSecondery        = new PointF();
-    private Smoother                     mRotateSmoother          = new Smoother(ROTATE_SMOOTH_FACTOR, ROTATE_SMOOTH_ERROR);
+    private Smoother mRotateSmoother          = new Smoother(ROTATE_SMOOTH_FACTOR, ROTATE_SMOOTH_ERROR);
     private Smoother                     mScaleSmoother           = new Smoother(SCALE_SMOOTH_FACTOR, SCALE_SMOOTH_ERROR);
 
 //    private Smoother2                    mRotatePivotSmoother     = new Smoother2();

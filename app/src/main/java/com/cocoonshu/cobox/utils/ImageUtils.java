@@ -1,4 +1,4 @@
-package com.cocoonshu.cobox.gestureimageview;
+package com.cocoonshu.cobox.utils;
 
 import android.graphics.Rect;
 import android.graphics.RectF;

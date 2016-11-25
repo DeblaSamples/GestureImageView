@@ -7,11 +7,10 @@ import android.graphics.BitmapFactory;
 import android.graphics.BitmapFactory.Options;
 import android.graphics.Rect;
 import android.net.Uri;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
+
+import com.cocoonshu.cobox.utils.ImageUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,8 +25,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadFactory;
-
-import static android.support.v7.widget.StaggeredGridLayoutManager.TAG;
 
 /**
  * Gestured image view

@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">GestureImageView</string>
+    <string name="app_name">CoBox</string>
+    <string name="app_name_imageview">ImageView</string>
+    <string name="app_name_listview">ListView</string>
     <string name="action_settings">Settings</string>
     <string name="action_revert">Revert</string>
     <string name="action_rotate">Rotate</string>

@@ -21,6 +21,8 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.cocoonshu.cobox.utils.ImageUtils;
+
 /**
  * Gestured image view
  * @Author Cocoonshu

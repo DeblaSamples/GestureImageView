@@ -1,4 +1,4 @@
-package com.cocoonshu.cobox.gestureimageview;
+package com.cocoonshu.coview;
 
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
@@ -20,6 +20,9 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.cocoonshu.cobox.gestureimageview.GestureImageView;
+import com.cocoonshu.cobox.gestureimageview.R;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
@@ -28,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton mFabRotate   = null;
     private FloatingActionButton mFabRelayout = null;
     private FloatingActionButton mFabRevert   = null;
-    private GestureImageView     mImgPicture  = null;
+    private GestureImageView mImgPicture  = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
